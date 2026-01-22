@@ -122,7 +122,7 @@ dotnet run
 **Option B: Manual**
 ```bash
 # Create migration (if not exists)
-dotnet ef migrations add InitialCreate --output-dir Data/Migrations
+dotnet ef migrations add <MigrationName> --output-dir Data/Migrations
 
 # Apply migration to database
 dotnet ef database update
