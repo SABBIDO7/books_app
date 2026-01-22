@@ -49,7 +49,7 @@ A REST API for managing books, authors, and illustrators built with .NET 10.0, E
 ```bash
 # Clone the repository
 git clone https://github.com/SABBIDO7/books_app.git
-cd books_app/books_app.api
+cd books_app
 
 # Start both SQL Server and the API
 docker compose up --build -d
@@ -103,7 +103,7 @@ docker start books-sqlserver
 ### Step 2: Navigate to Project Directory
 
 ```bash
-cd books_app.api
+cd books_app
 ```
 
 ### Step 3: Restore Dependencies
@@ -242,7 +242,7 @@ GET /api/books?sortBy=genre (http://localhost:5034/api/books?sortBy=genre)
 ## 📁 Project Structure
 
 ```
-books_app.api/
+books_app/
 ├── Application/
 │   ├── Dtos/                    # Data Transfer Objects
 │   │   ├── BookResponseDto.cs
@@ -410,7 +410,7 @@ Solution:
 
 **Problem**: Migration fails or database not created
 ```
-Solution (After navigating to the `books_app/books_app.api`):
+Solution (After navigating to the `books_app`):
 1. Delete existing migrations:
    rm -rf Data/Migrations
 
