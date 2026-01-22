@@ -1,0 +1,52 @@
+
+# Build results
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test results
+TestResults/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Environment / secrets
+appsettings.Development.json
+appsettings.Local.json
+.env
+
+# EF Core
+*.db
+*.sqlite
+Migrations/*.cs.bak
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Docker
+docker-compose.override.yml
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
