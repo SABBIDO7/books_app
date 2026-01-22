@@ -38,7 +38,7 @@ public class BookService : IBookService
             Title = request.Title,
             PublicationYear = request.PublicationYear,
             IllustratorId = request.IllustratorId,
-            ISBN = request.ISBN ?? string.Empty
+            ISBN = string.IsNullOrWhiteSpace(request.ISBN) ? null : request.ISBN
         };
 
         // Add book to context

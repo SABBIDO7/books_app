@@ -22,9 +22,9 @@ public class BookDbContext(DbContextOptions<BookDbContext> options): DbContext(o
         {
             entity.HasKey(b => b.Id);
             entity.Property(b => b.Title).IsRequired().HasMaxLength(500);
-            entity.Property(b => b.ISBN).IsRequired().HasMaxLength(13);
+            entity.Property(b => b.ISBN).IsRequired(false).HasMaxLength(13);
             
-            entity.HasIndex(b => b.ISBN).IsUnique();
+            entity.HasIndex(b => b.ISBN).IsUnique().HasFilter("[ISBN] IS NOT NULL");;
             
             entity.HasOne(b => b.Illustrator)
                   .WithMany(i => i.Books)

@@ -139,6 +139,27 @@ private BookDbContext CreateInMemoryContext()
     }
 
     [Fact]
+    public async Task ValidateAsync_ISBNExistingForBookBefore1970_ReturnsError()
+    {
+        var context = CreateInMemoryContext();
+        var validator = new BookValidator(context);
+        var request = new CreateBookDto
+        (
+            Title : "Oldest Book",
+            PublicationYear : 1655,
+            IllustratorId : 1,
+            ISBN : "1234567890123",
+            AuthorIds : new List<int> { 1 },
+            Genres : new List<Genre> { Genre.Action }
+        );
+
+        var result = await validator.ValidateAsync(request);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.Contains("ISBN must not be provided for books published before 1970"));
+    }
+
+    [Fact]
     public async Task ValidateAsync_ISBNNotExactly13Digits_ReturnsError()
     {
         var context = CreateInMemoryContext();

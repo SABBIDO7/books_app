@@ -18,11 +18,7 @@ namespace books_app.api.controller
         _logger = logger;
     }
 
-    /// <summary>
     /// Creates a new book
-    /// </summary>
-    /// <param name="request">Book creation request</param>
-    /// <returns>The created book</returns>
     [HttpPost]
     [ProducesResponseType(typeof(BookResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -57,12 +53,8 @@ namespace books_app.api.controller
         }
     }
 
-    /// <summary>
     /// Gets all books with optional filtering and sorting
-    /// </summary>
-    /// <param name="authorId">Optional: Filter by author ID</param>
-    /// <param name="sortBy">Optional: Sort by field (title, year, genre)</param>
-    /// <returns>List of books</returns>
+    /// Optional: Sort by field (title, year, genre)
     [HttpGet]
     [ProducesResponseType(typeof(List<BookResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBooks([FromQuery] int? authorId = null, [FromQuery] string? sortBy = null)

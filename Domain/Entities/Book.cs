@@ -7,7 +7,6 @@ public class Book
     public int PublicationYear { get; set; }
     public string? ISBN { get; set; } = string.Empty;
     
-    // Navigation properties
     public int IllustratorId { get; set; }
     public Illustrator Illustrator { get; set; } = null!;
     

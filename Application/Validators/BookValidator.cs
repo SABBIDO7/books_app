@@ -125,10 +125,9 @@ public class BookValidator : IBookValidator
         // Books before 1970 don't need ISBN
         if (publicationYear < 1970)
         {
-            // ISBN is optional for books before 1970
-            if (string.IsNullOrWhiteSpace(isbn))
+            if (!string.IsNullOrWhiteSpace(isbn))
             {
-                return (true, string.Empty);
+                return (false, "ISBN must not be provided for books published before 1970.");
             }
         }
         else
