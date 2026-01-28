@@ -72,7 +72,7 @@ private BookDbContext CreateInMemoryContext()
         var result = await validator.ValidateAsync(request);
 
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.Contains("Illustrator is mandatory"));
+        Assert.Contains(result.Errors, e => e.Contains("Illustrator is mandatory. Invalid Id"));
     }
 
     [Fact]
@@ -358,4 +358,5 @@ private BookDbContext CreateInMemoryContext()
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.Contains("Illustrator with ID 999 does not exist"));
     }
+    // TODO: Test duplicated AuthorId within the same book on book's creation
     }

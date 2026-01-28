@@ -39,7 +39,8 @@ namespace books_app.api.controller
                 });
             }
 
-            return CreatedAtAction(nameof(GetBooks), new { id = book!.Id }, book);
+            //return CreatedAtAction(nameof(GetBooks), new { id = book!.Id }, book);
+            return Ok(book);
         }
         catch (Exception ex)
         {

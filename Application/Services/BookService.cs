@@ -25,66 +25,76 @@ public class BookService : IBookService
 
     public async Task<(bool success, BookResponseDto? book, List<string> errors)> CreateBookAsync(CreateBookDto request)
     {
-        // Validate the book
-        var validationResult = await _validator.ValidateAsync(request);
-        if (!validationResult.IsValid)
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try 
         {
-            return (false, null, validationResult.Errors!);
-        }
-
-        // Create the book entity
-        var book = new Book
-        {
-            Title = request.Title,
-            PublicationYear = request.PublicationYear,
-            IllustratorId = request.IllustratorId,
-            ISBN = string.IsNullOrWhiteSpace(request.ISBN) ? null : request.ISBN
-        };
-
-        // Add book to context
-        _context.Books.Add(book);
-        await _context.SaveChangesAsync(); // Save to get the book ID
-
-        // Add authors
-        if (request.AuthorIds != null && request.AuthorIds.Any())
-        {
-            foreach (var authorId in request.AuthorIds)
+            // Validate the book
+            var validationResult = await _validator.ValidateAsync(request);
+            if (!validationResult.IsValid)
             {
-                var bookAuthor = new BookAuthor
-                {
-                    BookId = book.Id,
-                    AuthorId = authorId
-                };
-                _context.BookAuthors.Add(bookAuthor);
+                return (false, null, validationResult.Errors!);
             }
-        }
 
-        // Add genres
-        if (request.Genres != null && request.Genres.Any())
-        {
-            foreach (var genre in request.Genres)
+            // Create the book entity
+            var book = new Book
             {
-                var bookGenre = new BookGenre
+                Title = request.Title,
+                PublicationYear = request.PublicationYear,
+                IllustratorId = request.IllustratorId,
+                ISBN = string.IsNullOrWhiteSpace(request.ISBN) ? null : request.ISBN
+            };
+
+            // Add book to context
+            _context.Books.Add(book);
+            await _context.SaveChangesAsync(); // Save to get the book ID
+
+            // Add authors
+            if (request.AuthorIds != null && request.AuthorIds.Any())
+            {
+                foreach (var authorId in request.AuthorIds)
                 {
-                    BookId = book.Id,
-                    Genre = genre
-                };
-                _context.BookGenres.Add(bookGenre);
+                    var bookAuthor = new BookAuthor
+                    {
+                        BookId = book.Id,
+                        AuthorId = authorId
+                    };
+                    _context.BookAuthors.Add(bookAuthor);
+                }
             }
+
+            // Add Book's genres
+            if (request.Genres != null && request.Genres.Any())
+            {
+                foreach (var genre in request.Genres)
+                {
+                    var bookGenre = new BookGenre
+                    {
+                        BookId = book.Id,
+                        Genre = genre
+                    };
+                    _context.BookGenres.Add(bookGenre);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            // Reload the book with all related data
+            var createdBook = await _context.Books
+                .Include(b => b.Illustrator)
+                .Include(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
+                .Include(b => b.BookGenres)
+                .FirstOrDefaultAsync(b => b.Id == book.Id);
+
+            var response = MapToResponse(createdBook!);
+            return (true, response, new List<string>());
         }
-
-        await _context.SaveChangesAsync();
-
-        // Reload the book with all related data
-        var createdBook = await _context.Books
-            .Include(b => b.Illustrator)
-            .Include(b => b.BookAuthors)
-                .ThenInclude(ba => ba.Author)
-            .Include(b => b.BookGenres)
-            .FirstOrDefaultAsync(b => b.Id == book.Id);
-
-        var response = MapToResponse(createdBook!);
-        return (true, response, new List<string>());
+        catch
+        {
+            await transaction.RollbackAsync();
+            return (false, null, ["One or more Insertion failed!"]);
+        }
     }
 
     public async Task<List<BookResponseDto>> GetBooksAsync(int? authorId = null, string? sortBy = null)
@@ -107,7 +117,7 @@ public class BookService : IBookService
         {
             "title" => query.OrderBy(b => b.Title),
             "year" or "publicationyear" => query.OrderBy(b => b.PublicationYear),
-            "genre" => query.OrderBy(b => b.BookGenres.Min(bg => bg.Genre)),
+            "genre" => query.OrderBy(b => b.BookGenres.Min(bg => bg.Genre.ToString())),
             _ => query.OrderBy(b => b.Id)
         };
 

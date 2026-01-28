@@ -32,7 +32,7 @@ public class BookValidator : IBookValidator
         // Illustrator is mandatory
         if (request.IllustratorId <= 0)
         {
-            errors.Add("Illustrator is mandatory.");
+            errors.Add("Illustrator is mandatory. Invalid Id");
         }
         else
         {
@@ -81,18 +81,35 @@ public class BookValidator : IBookValidator
         // Check for duplicate book (same title, year, and author)
         if (request.AuthorIds != null && request.AuthorIds.Any())
         {
-            foreach (var authorId in request.AuthorIds)
+            var duplicatedAuthorName = await _context.Books
+            .Where(b=>b.Title == request.Title && b.PublicationYear == request.PublicationYear)
+            .SelectMany(ba=> ba.BookAuthors) // Concatenates inner lists
+            .Where(ba => request.AuthorIds.Contains(ba.AuthorId))
+            .Select(ba => ba.Author.FullName)
+            .FirstOrDefaultAsync();
+            
+            if (duplicatedAuthorName != null)
             {
-                var duplicateExists = await _context.Books
-                    .Where(b => b.Title == request.Title && b.PublicationYear == request.PublicationYear)
-                    .AnyAsync(b => b.BookAuthors.Any(ba => ba.AuthorId == authorId));
+                errors.Add($"A book with the same title, publication year, and author ({duplicatedAuthorName}) already exists.");
+            }
+        }
+
+        // Check For Entry Duplicated Authors
+        if(request.AuthorIds != null && request.AuthorIds.Any())
+        {
+            var duplicatedAuthors = request.AuthorIds
+                .GroupBy(id=>id)
+                .Where(g=> g.Count() > 1)
+                .Select(g=>g.Key)
+                .ToList();
+            if (duplicatedAuthors.Count > 0)
+            {
+                var duplicatedAuthorNames = await _context.Authors
+                .Where(a=> duplicatedAuthors.Contains(a.Id))
+                .Select(a=>a.FullName)
+                .ToListAsync();
                 
-                if (duplicateExists)
-                {
-                    var author = await _context.Authors.FindAsync(authorId);
-                    errors.Add($"A book with the same title, publication year, and author ({author?.FullName}) already exists.");
-                    break;
-                }
+                errors.Add($"You entered a duplicated Author for the same book. Duplicated Authors: ({string.Join(", ",duplicatedAuthorNames)})");
             }
         }
 
